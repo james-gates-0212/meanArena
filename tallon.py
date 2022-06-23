@@ -70,12 +70,14 @@ class Tallon():
                 )
         return candidatePoses
 
-    def blockPoses(self, pose = False):
+    def blockPoses(self, pose = False, noCandidate = False):
         # Get the location of the Meanies.
         allMeanies = self.gameWorld.getMeanieLocation()
         # Get the location of the Pits.
         allPits = self.gameWorld.getPitsLocation()
-        allMeaniesCandidatePoses = self.availablePoses(allMeanies, pose)
+        allMeaniesCandidatePoses = []
+        if not noCandidate:
+            allMeaniesCandidatePoses = self.availablePoses(allMeanies, pose)
         return allPits + allMeanies + allMeaniesCandidatePoses
 
     def candidatePoses(self, pose = False):
@@ -108,7 +110,9 @@ class Tallon():
 
         myTargetPose = self.targetMaxPose(myPosition)
 
-        if foundMeanies and myTargetPose != False:
+        # print(myTargetPose)
+
+        if foundMeanies and myTargetPose:
             # If not at the same x coordinate, reduce the difference
             if myTargetPose.x > myPosition.x:
                 return Directions.EAST
