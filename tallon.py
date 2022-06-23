@@ -17,7 +17,7 @@ config.nonDeterministic = None
 
 class Tallon():
 
-    freeDistanceLimit   = 0
+    safeDistance   = 0
     allBonuses          = []
     currentPose         = None
     targetPose          = None
@@ -34,51 +34,61 @@ class Tallon():
         # What moves are possible.
         self.moves = [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]
 
-        # Make the distance limit between Tallon and Meanies
+        # Make the safe distance between Tallon and Meanies
         if config.partialVisibility:
-            self.freeDistanceLimit = config.visibilityLimit / 2
+            self.safeDistance = config.visibilityLimit / 2
         else:
-            self.freeDistanceLimit = config.senseDistance / 2
+            self.safeDistance = config.senseDistance / 2
 
-        # if self.freeDistanceLimit < 3:
-        #     self.freeDistanceLimit = 3
+        # if self.safeDistance < 3:
+        #     self.safeDistance = 3
 
-    def filterPoses(self, poses, blockPoses = []):
+    # Get the poses were not contained the ban poses
+    def filterPoses(self, poses, banPoses = []):
         filtered = []
         for pose in poses:
-            if not utils.containedIn(pose, blockPoses):
+            if not utils.containedIn(pose, banPoses):
                 filtered.append(pose)
         return filtered
 
+    # Get the middle pose in the game world
     def middlePose(self):
         middlePose = Pose()
         middlePose.x = self.gameWorld.maxX / 2
         middlePose.y = self.gameWorld.maxY / 2
         return middlePose
 
-    def poseByMaxSeparation(self, poses, targets):
-        if len(poses) == 0 or len(targets) == 0:
+    # Choose the best pose from the given poses by avoiding the Bans and earning the closest Bonus
+    def chooseTheBestPose(self, poses, bans = []):
+        if len(poses) == 0 or len(bans) == 0:
             return None
 
         distances = []
+        # Get the closest bonus from Tallon
         bonus = self.closestBonus()
         for pose in poses:
             distance = 0
-            for target in targets:
-                distance += utils.separation(pose, target)
+            for ban in bans:
+                # Add the distance between a pose and a ban
+                distance += utils.separation(pose, ban)
             if bonus != None:
+                # If the closest bonus exists, remove the distance between a pos and a bonus
+                # This will make the choosing the closest pose from the given poses
                 distance -= utils.separation(pose, bonus)
             distances.append(distance)
         maxDistance = max(distances)
 
+        # Get the candidate poses by the max distance
         candidatePoses = []
         for i in range(len(distances)):
             if distances[i] == maxDistance:
                 candidatePoses.append(poses[i])
 
+        # If the candidate pose is only one, will choose this
         if len(candidatePoses) == 1:
             return candidatePoses[0]
 
+        # Otherwise, will choose the closes pose from the middle pose
         middlePose = self.middlePose()
 
         distances.clear()
@@ -93,6 +103,7 @@ class Tallon():
     # Generate all poses for moving in the world
     def availablePoses(self, poses, target = None):
         candidatePoses = []
+        # Cross offsets
         offsets =  [
             { 'x': 0, 'y': +1 }, # North
             { 'x': 0, 'y': -1 }, # South
@@ -115,30 +126,34 @@ class Tallon():
                 candidatePoses.append(candidatePose)
         return candidatePoses
 
-    def blockPoses(self, pose = None, noCandidate = False):
+    # Get the dangerous poses from the Pits and Meanies
+    def banPoses(self, pose = None, noCandidatePoses = False):
         allMeaniesCandidatePoses = []
-        if not noCandidate:
+        if not noCandidatePoses:
             allMeaniesCandidatePoses = self.availablePoses(self.allMeanies, pose)
         return self.allPits + self.allMeanies + allMeaniesCandidatePoses
 
+    # Get the candidate poses from the given pose
     def candidatePoses(self, pose = None):
         if pose == None:
             return []
         # Filter the available poses to avoid the Pits, Meanies and Meanies's candidate poses
-        candidatePoses = self.filterPoses(self.availablePoses([pose]), self.blockPoses(pose))
+        candidatePoses = self.filterPoses(self.availablePoses([pose]), self.banPoses(pose))
 
         return candidatePoses
 
-    def filterByFreeDistanceLimit(self, poses, target):
+    # Get the dangerous Meanies in the free distance
+    def filterBySafeDistance(self, poses, target):
         filtered = []
         for pose in poses:
-            if utils.separation(pose, target) <= self.freeDistanceLimit:
+            if utils.separation(pose, target) <= self.safeDistance:
                 filtered.append(pose)
         return filtered
 
+    # Get the target pose for Tallon to avoid Meanies and earn the closest bonus
     def targetPoseToAvoidMeanies(self):
-        self.allMeaniesToAvoid = self.filterByFreeDistanceLimit(self.allMeanies, self.currentPose)
-        self.targetPose = self.poseByMaxSeparation(self.candidatePoses(self.currentPose), self.allMeaniesToAvoid)
+        self.allMeaniesToAvoid = self.filterBySafeDistance(self.allMeanies, self.currentPose)
+        self.targetPose = self.chooseTheBestPose(self.candidatePoses(self.currentPose), self.allMeaniesToAvoid)
 
     # Get the pose was moved by offsetX and offsetY from the given pose
     def offset(self, pose, offsetX = 0, offsetY = 0):
@@ -147,20 +162,21 @@ class Tallon():
         newPose.y = utils.checkBounds(self.gameWorld.maxY, pose.y + offsetY)
         return newPose
 
-    # Get the direction between current pose and target pose without block poses
-    def direction(self, blocks = []):
+    # Get the direction between current pose and target pose without ban poses
+    def direction(self, bans = []):
         # If not at the same x coordinate, reduce the difference
-        if self.targetPose.x > self.currentPose.x and not utils.containedIn(self.offset(self.currentPose, +1, 0), blocks):
+        if self.targetPose.x > self.currentPose.x and not utils.containedIn(self.offset(self.currentPose, +1, 0), bans):
             return Directions.EAST
-        if self.targetPose.x < self.currentPose.x and not utils.containedIn(self.offset(self.currentPose, -1, 0), blocks):
+        if self.targetPose.x < self.currentPose.x and not utils.containedIn(self.offset(self.currentPose, -1, 0), bans):
             return Directions.WEST
         # If not at the same y coordinate, reduce the difference
-        if self.targetPose.y < self.currentPose.y and not utils.containedIn(self.offset(self.currentPose, 0, -1), blocks):
+        if self.targetPose.y < self.currentPose.y and not utils.containedIn(self.offset(self.currentPose, 0, -1), bans):
             return Directions.NORTH
-        if self.targetPose.y > self.currentPose.y and not utils.containedIn(self.offset(self.currentPose, 0, +1), blocks):
+        if self.targetPose.y > self.currentPose.y and not utils.containedIn(self.offset(self.currentPose, 0, +1), bans):
             return Directions.SOUTH
         return None
 
+    # Get the direction for travel
     def selfMoveDirection(self):
         direction = self.moves[random.randint(0, 3)]
         # If not at the same x coordinate, reduce the difference
@@ -175,9 +191,11 @@ class Tallon():
             return Directions.SOUTH
         return None
 
+    # Get the closest bonus from the Tallon
     def closestBonus(self):
         if len(self.allBonuses) == 0:
             return None
+
         distances = []
         for bonus in self.allBonuses:
             distances.append(utils.separation(self.currentPose, bonus))
@@ -215,10 +233,10 @@ class Tallon():
 
         if direction == None:
             # if there are still bonuses, move towards the candidate one.
-            allBlocks = self.blockPoses(self.currentPose)
+            allBans = self.banPoses(self.currentPose)
             if len(self.allBonuses) > 0:
                 self.targetPose = self.closestBonus()
-                direction = self.direction(allBlocks)
+                direction = self.direction(allBans)
 
         # if there are no meanies to avoid and no candidate bonus, Tallon travels itself.
         if not foundMeanies and direction == None:
