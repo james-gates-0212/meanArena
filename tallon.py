@@ -132,6 +132,20 @@ class Tallon():
             return Directions.SOUTH
         return None
 
+    def selfMoveDirection(self):
+        direction = self.moves[random.randint(0, 3)]
+        # If not at the same x coordinate, reduce the difference
+        if direction == Directions.EAST and not utils.containedIn(self.offset(self.currentPose, +1, 0), self.allPits):
+            return Directions.EAST
+        if direction == Directions.WEST and not utils.containedIn(self.offset(self.currentPose, -1, 0), self.allPits):
+            return Directions.WEST
+        # If not at the same y coordinate, reduce the difference
+        if direction == Directions.NORTH and not utils.containedIn(self.offset(self.currentPose, 0, -1), self.allPits):
+            return Directions.NORTH
+        if direction == Directions.SOUTH and not utils.containedIn(self.offset(self.currentPose, 0, +1), self.allPits):
+            return Directions.SOUTH
+        return None
+
     def makeMove(self):
         # This is the function you need to define
 
@@ -170,7 +184,7 @@ class Tallon():
 
         # if there are no meanies to avoid and no candidate bonus, Tallon travels itself.
         if not foundMeanies and direction == None:
-            direction = self.moves[random.randint(0, 3)]
+            direction = self.selfMoveDirection()
 
         # if there are no meanies to avoid and no more bonus, Tallon doesn't move
         if direction == None:
