@@ -70,18 +70,17 @@ class Tallon():
                 )
         return candidatePoses
 
-    def candidatePoses(self, pose):
+    def blockPoses(self, pose = False):
         # Get the location of the Meanies.
         allMeanies = self.gameWorld.getMeanieLocation()
-
         # Get the location of the Pits.
         allPits = self.gameWorld.getPitsLocation()
-
         allMeaniesCandidatePoses = self.availablePoses(allMeanies, pose)
-        originalCandidatePoses = self.availablePoses([pose])
+        return allPits + allMeanies + allMeaniesCandidatePoses
 
+    def candidatePoses(self, pose = False):
         # Filter the available poses to avoid the Pits, Meanies and Meanies's candidate poses
-        candidatePoses = self.filterPoses(originalCandidatePoses, allPits + allMeaniesCandidatePoses + allMeanies)
+        candidatePoses = self.filterPoses(self.availablePoses([pose]), self.blockPoses(pose))
 
         return candidatePoses
 
@@ -101,16 +100,11 @@ class Tallon():
         # Get the location of the Bonuses.
         allBonuses = self.gameWorld.getBonusLocation()
 
-        # Get the location of the Pits.
-        allPits = self.gameWorld.getPitsLocation()
-
-        # Get the location of the Meanies.
-        allMeanies = self.gameWorld.getMeanieLocation()
-
         # Get the location of the Tallon.
         myPosition = self.gameWorld.getTallonLocation()
 
-        foundMeanies = len(allMeanies) > 0
+        # Found the location of the Meanies.
+        foundMeanies = len(self.gameWorld.getMeanieLocation()) > 0
 
         myTargetPose = self.targetMaxPose(myPosition)
 
@@ -131,7 +125,7 @@ class Tallon():
                 return Directions.SOUTH
 
         # if there are still bonuses, move towards the candidate one.
-        allBlocks = allPits + allMeanies
+        allBlocks = self.blockPoses(myPosition)
         if len(allBonuses) > 0:
             candidateBonus = allBonuses[0]
             # If not at the same x coordinate, reduce the difference
@@ -150,3 +144,4 @@ class Tallon():
                 return Directions.SOUTH
 
         # if there are no more bonuses, Tallon doesn't move
+        print('no move~')

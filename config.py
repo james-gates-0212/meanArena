@@ -34,7 +34,7 @@ visibilityLimit = 6
 #
 # If nonDeterministic is True, Tallon's action model will be
 # nonDeterministic.
-nonDeterministic = True
+nonDeterministic = False
 #
 # If Tallon is nondeterministic, probability that they carry out the
 # intended action:
