@@ -111,17 +111,13 @@ class Tallon():
         if foundMeanies and myTargetPose != False:
             # If not at the same x coordinate, reduce the difference
             if myTargetPose.x > myPosition.x:
-                print('avoid - EAST')
                 return Directions.EAST
             if myTargetPose.x < myPosition.x:
-                print('avoid - WEST')
                 return Directions.WEST
             # If not at the same y coordinate, reduce the difference
             if myTargetPose.y < myPosition.y:
-                print('avoid - NORTH')
                 return Directions.NORTH
             if myTargetPose.y > myPosition.y:
-                print('avoid - SOUTH')
                 return Directions.SOUTH
 
         # if there are still bonuses, move towards the candidate one.
@@ -130,18 +126,13 @@ class Tallon():
             candidateBonus = allBonuses[0]
             # If not at the same x coordinate, reduce the difference
             if candidateBonus.x > myPosition.x and not utils.containedIn(myPosition.offset(+1, 0), allBlocks):
-                print('bonus - EAST')
                 return Directions.EAST
             if candidateBonus.x < myPosition.x and not utils.containedIn(myPosition.offset(-1, 0), allBlocks):
-                print('bonus - WEST')
                 return Directions.WEST
             # If not at the same y coordinate, reduce the difference
             if candidateBonus.y < myPosition.y and not utils.containedIn(myPosition.offset(0, -1), allBlocks):
-                print('bonus - NORTH')
                 return Directions.NORTH
             if candidateBonus.y > myPosition.y and not utils.containedIn(myPosition.offset(0, +1), allBlocks):
-                print('bonus - SOUTH')
                 return Directions.SOUTH
 
         # if there are no more bonuses, Tallon doesn't move
-        print('no move~')
