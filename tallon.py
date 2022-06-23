@@ -40,8 +40,8 @@ class Tallon():
         else:
             self.freeDistanceLimit = config.senseDistance / 2
 
-        if self.freeDistanceLimit < 3:
-            self.freeDistanceLimit = 3
+        # if self.freeDistanceLimit < 3:
+        #     self.freeDistanceLimit = 3
 
     def filterPoses(self, poses, blockPoses = []):
         filtered = []
@@ -50,16 +50,44 @@ class Tallon():
                 filtered.append(pose)
         return filtered
 
+    def middlePose(self):
+        middlePose = Pose()
+        middlePose.x = self.gameWorld.maxX / 2
+        middlePose.y = self.gameWorld.maxY / 2
+        return middlePose
+
     def poseByMaxSeparation(self, poses, targets):
         if len(poses) == 0 or len(targets) == 0:
             return None
-        sepas = []
+
+        distances = []
         for pose in poses:
-            sepa = 0
+            distance = 0
             for target in targets:
-                sepa += utils.separation(pose, target)
-            sepas.append(sepa)
-        return poses[sepas.index(max(sepas))]
+                distance += utils.separation(pose, target)
+            for bonus in self.allBonuses:
+                distance -= utils.separation(pose, bonus)
+            distances.append(distance)
+        maxDistance = max(distances)
+
+        candidatePoses = []
+        for i in range(len(distances)):
+            if distances[i] == maxDistance:
+                candidatePoses.append(poses[i])
+
+        if len(candidatePoses) == 1:
+            return candidatePoses[0]
+
+        middlePose = self.middlePose()
+
+        distances.clear()
+        for pose in candidatePoses:
+            distance = utils.separation(pose, middlePose)
+            for bonus in self.allBonuses:
+                distance -= utils.separation(pose, bonus)
+            distances.append(distance)
+
+        return candidatePoses[distances.index(min(distances))]
 
     # Generate all poses for moving in the world
     def availablePoses(self, poses, target = None):
