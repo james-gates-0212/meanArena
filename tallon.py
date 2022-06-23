@@ -93,6 +93,19 @@ class Tallon():
         newPose.y = utils.checkBounds(self.gameWorld.maxY, pose.y + offsetY)
         return newPose
 
+    def direction(self, current, target, blocks = []):
+        # If not at the same x coordinate, reduce the difference
+        if target.x > current.x and not utils.containedIn(self.offset(current, +1, 0), blocks):
+            return Directions.EAST
+        if target.x < current.x and not utils.containedIn(self.offset(current, -1, 0), blocks):
+            return Directions.WEST
+        # If not at the same y coordinate, reduce the difference
+        if target.y < current.y and not utils.containedIn(self.offset(current, 0, -1), blocks):
+            return Directions.NORTH
+        if target.y > current.y and not utils.containedIn(self.offset(current, 0, +1), blocks):
+            return Directions.SOUTH
+        return None
+
     def makeMove(self):
         # This is the function you need to define
 
@@ -104,38 +117,27 @@ class Tallon():
         allBonuses = self.gameWorld.getBonusLocation()
 
         # Get the location of the Tallon.
-        myPosition = self.gameWorld.getTallonLocation()
+        myCurrentPose = self.gameWorld.getTallonLocation()
 
         # Found the location of the Meanies.
         foundMeanies = len(self.gameWorld.getMeanieLocation()) > 0
 
-        myTargetPose = self.targetMaxPose(myPosition)
+        myTargetPose = self.targetMaxPose(myCurrentPose)
+
+        direction = None
 
         if foundMeanies and myTargetPose:
-            # If not at the same x coordinate, reduce the difference
-            if myTargetPose.x > myPosition.x:
-                return Directions.EAST
-            if myTargetPose.x < myPosition.x:
-                return Directions.WEST
-            # If not at the same y coordinate, reduce the difference
-            if myTargetPose.y < myPosition.y:
-                return Directions.NORTH
-            if myTargetPose.y > myPosition.y:
-                return Directions.SOUTH
+            direction = self.direction(myCurrentPose, myTargetPose)
 
-        # if there are still bonuses, move towards the candidate one.
-        allBlocks = self.blockPoses(myPosition)
-        if len(allBonuses) > 0:
-            candidateBonus = allBonuses[0]
-            # If not at the same x coordinate, reduce the difference
-            if candidateBonus.x > myPosition.x and not utils.containedIn(self.offset(myPosition, +1, 0), allBlocks):
-                return Directions.EAST
-            if candidateBonus.x < myPosition.x and not utils.containedIn(self.offset(myPosition, -1, 0), allBlocks):
-                return Directions.WEST
-            # If not at the same y coordinate, reduce the difference
-            if candidateBonus.y < myPosition.y and not utils.containedIn(self.offset(myPosition, 0, -1), allBlocks):
-                return Directions.NORTH
-            if candidateBonus.y > myPosition.y and not utils.containedIn(self.offset(myPosition, 0, +1), allBlocks):
-                return Directions.SOUTH
+        if direction == None:
+            # if there are still bonuses, move towards the candidate one.
+            allBlocks = self.blockPoses(myCurrentPose)
+            if len(allBonuses) > 0:
+                candidateBonus = allBonuses[0]
+                direction = self.direction(myCurrentPose, candidateBonus, allBlocks)
 
         # if there are no more bonuses, Tallon doesn't move
+        if direction == None:
+            return
+
+        return direction
