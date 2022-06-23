@@ -29,6 +29,13 @@ class Pose():
     x = 0
     y = 0
 
+    def __init__(self, x = 0, y = 0):
+        self.x = x
+        self.y = y
+
+    def offset(self, offsetX = 0, offsetY = 0):
+        return Pose(self.x + offsetX, self.y + offsetY)
+
     def print(self):
         print('[', self.x, ',', self.y, ']')
 
@@ -99,7 +106,7 @@ def printGameState(world):
     print("Meanies:")
     for i in range(len(world.getMeanieLocation())):
         world.getMeanieLocation()[i].print()
-        
+
     print("Tallon:")
     world.getTallonLocation().print()
 

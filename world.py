@@ -65,7 +65,7 @@ class World():
 
         # Did Tallon just successfully grab a bonus?
         self.grabbed = False
-        
+
     #
     # Access Methods
     #
@@ -115,7 +115,7 @@ class World():
     # Does Tallon see the glow?
     def tallonGlow(self):
         return self.isGlowing(self.tLoc)
- 
+
     #
     # Methods
     #
@@ -131,7 +131,7 @@ class World():
                 print("Oops! Met a Meanie")
                 dead = True
                 self.status = State.LOST
-                
+
         # Did Tallon fall in a Pit?
         for i in range(len(self.pLoc)):
             if utils.sameLocation(self.tLoc, self.pLoc[i]):
@@ -144,11 +144,11 @@ class World():
             self.status
             # Right now this does not trigger anything in terms of game state.
             #print("Got the last bonus!")
-            
+
         if dead == True:
             print("Game Over!")
             return True
-            
+
     # Implements the move chosen by Tallon
     def updateTallon(self, direction):
         # Set the bonus grabbed flag to False
@@ -161,15 +161,15 @@ class World():
         if direction == Directions.SOUTH:
             if self.tLoc.y < self.maxY:
                 self.tLoc.y = self.tLoc.y + 1
-            
+
         if direction == Directions.NORTH:
             if self.tLoc.y > 0:
                 self.tLoc.y = self.tLoc.y - 1
-                
+
         if direction == Directions.EAST:
             if self.tLoc.x < self.maxX:
                 self.tLoc.x = self.tLoc.x + 1
-                
+
         if direction == Directions.WEST:
             if self.tLoc.x > 0:
                 self.tLoc.x = self.tLoc.x - 1
@@ -184,7 +184,7 @@ class World():
                 self.grabbed = True
                 self.updateScoreWithBonus()
 
-        # Assumes that bonuses have different locations (now true). 
+        # Assumes that bonuses have different locations (now true).
         if match:
             self.bLoc.pop(index)
             if len(self.bLoc) == 0:
@@ -202,7 +202,7 @@ class World():
                 return self.sideMove(direction)
         else:
             return direction
-        
+
     # Move at 90 degrees to the original direction.
     def sideMove(self, direction):
         # Do we head left or right of the intended direction?
@@ -234,7 +234,7 @@ class World():
                 return Directions.NORTH
             else:
                 return Directions.SOUTH
-            
+
     # Move the Meanie if that is appropriate
     #
     # Need a decrementDifference function to tidy things up
@@ -252,19 +252,19 @@ class World():
         target = self.tLoc
         # If same x-coordinate, move in the y direction
         if self.mLoc[i].x == target.x:
-            self.mLoc[i].y = self.reduceDifference(self.mLoc[i].y, target.y)        
+            self.mLoc[i].y = self.reduceDifference(self.mLoc[i].y, target.y)
         # If same y-coordinate, move in the x direction
         elif self.mLoc[i].y == target.y:
-            self.mLoc[i].x = self.reduceDifference(self.mLoc[i].x, target.x)        
+            self.mLoc[i].x = self.reduceDifference(self.mLoc[i].x, target.x)
         # If x and y both differ, approximate a diagonal
         # approach by randomising between moving in the x and
         # y direction.
         else:
             dice = random.random()
             if dice > 0.5:
-                self.mLoc[i].y = self.reduceDifference(self.mLoc[i].y, target.y)        
+                self.mLoc[i].y = self.reduceDifference(self.mLoc[i].y, target.y)
             else:
-                self.mLoc[i].x = self.reduceDifference(self.mLoc[i].x, target.x)        
+                self.mLoc[i].x = self.reduceDifference(self.mLoc[i].x, target.x)
 
     # Move value towards target.
     def reduceDifference(self, value, target):
@@ -291,22 +291,22 @@ class World():
         if (self.clock % config.meanieInterval) == 0:
             newLoc = utils.pickUniquePose(self.maxX, self.maxY, self.locationList)
             self.mLoc.append(newLoc)
-            
+
             self.locationList.append(newLoc)
-            
+
     # Increment the clock every time the function is called
     def updateClock(self):
         self.clock +=1
 
     # Increment the score at intervals
     def updateScore(self):
-        if (self.clock % config.scoreInterval) == 0: 
+        if (self.clock % config.scoreInterval) == 0:
             self.score +=1
 
     # Update the score with bonus
     def updateScoreWithBonus(self):
         self.score += config.bonusValue
-        
+
     # Is the given location smelly?
     #
     # A location is smelly if it is next to a Meanie
@@ -333,7 +333,7 @@ class World():
             return True
         else:
             return False
-        
+
     # Is the location loc next to any of the locations in locList.
     #
     # To be adjacent in this sense, you either have to be at the same
@@ -367,5 +367,3 @@ class World():
             return filteredLocations
         else:
             return locations
-            
-            
