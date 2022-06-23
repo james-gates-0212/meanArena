@@ -61,11 +61,12 @@ class Tallon():
             return None
 
         distances = []
+        bonus = self.closestBonus()
         for pose in poses:
             distance = 0
             for target in targets:
                 distance += utils.separation(pose, target)
-            for bonus in self.allBonuses:
+            if bonus != None:
                 distance -= utils.separation(pose, bonus)
             distances.append(distance)
         maxDistance = max(distances)
@@ -174,6 +175,15 @@ class Tallon():
             return Directions.SOUTH
         return None
 
+    def closestBonus(self):
+        if len(self.allBonuses) == 0:
+            return None
+        distances = []
+        for bonus in self.allBonuses:
+            distances.append(utils.separation(self.currentPose, bonus))
+
+        return self.allBonuses[distances.index(min(distances))]
+
     def makeMove(self):
         # This is the function you need to define
 
@@ -207,7 +217,7 @@ class Tallon():
             # if there are still bonuses, move towards the candidate one.
             allBlocks = self.blockPoses(self.currentPose)
             if len(self.allBonuses) > 0:
-                self.targetPose = self.allBonuses[0]
+                self.targetPose = self.closestBonus()
                 direction = self.direction(allBlocks)
 
         # if there are no meanies to avoid and no candidate bonus, Tallon travels itself.
