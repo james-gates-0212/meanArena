@@ -44,30 +44,25 @@ class Tallon():
     def availablePoses(self, poses, target = False):
         candidatePoses = []
         offsets =  [
-            Pose(0, +1), # North
-            Pose(0, -1), # South
-            Pose(+1, 0), # Eest
-            Pose(-1, 0), # West
+            { 'x': 0, 'y': +1 }, # North
+            { 'x': 0, 'y': -1 }, # South
+            { 'x': +1, 'y': 0 }, # Eest
+            { 'x': -1, 'y': 0 }, # West
         ]
         for pose in poses:
             for offset in offsets:
-                candidateX = pose.x + offset.x
-                candidateY = pose.y + offset.y
+                candidatePose = Pose();
+                candidatePose.x = pose.x + offset['x']
+                candidatePose.y = pose.y + offset['y']
                 if (
                     target != False and
-                    (
-                        pose.x == target.x or
-                        pose.y == target.y
-                    )
+                    ( pose.x == target.x or pose.y == target.y )
                 ):
-                    candidateX = self.gameWorld.reduceDifference(pose.x, target.x)
-                    candidateY = self.gameWorld.reduceDifference(pose.y, target.y)
-                candidatePoses.append(
-                    Pose(
-                        utils.checkBounds(self.gameWorld.maxX, candidateX),
-                        utils.checkBounds(self.gameWorld.maxY, candidateY)
-                    )
-                )
+                    candidatePose.x = self.gameWorld.reduceDifference(pose.x, target.x)
+                    candidatePose.y = self.gameWorld.reduceDifference(pose.y, target.y)
+                candidatePose.x = utils.checkBounds(self.gameWorld.maxX, candidatePose.x)
+                candidatePose.y = utils.checkBounds(self.gameWorld.maxY, candidatePose.y)
+                candidatePoses.append(candidatePose)
         return candidatePoses
 
     def blockPoses(self, pose = False, noCandidate = False):
@@ -92,6 +87,12 @@ class Tallon():
 
         return self.maxSeparationPose(self.candidatePoses(pose), allMeanies)
 
+    def offset(self, pose, offsetX = 0, offsetY = 0):
+        newPose = Pose()
+        newPose.x = utils.checkBounds(self.gameWorld.maxX, pose.x + offsetX)
+        newPose.y = utils.checkBounds(self.gameWorld.maxY, pose.y + offsetY)
+        return newPose
+
     def makeMove(self):
         # This is the function you need to define
 
@@ -110,8 +111,6 @@ class Tallon():
 
         myTargetPose = self.targetMaxPose(myPosition)
 
-        # print(myTargetPose)
-
         if foundMeanies and myTargetPose:
             # If not at the same x coordinate, reduce the difference
             if myTargetPose.x > myPosition.x:
@@ -129,14 +128,14 @@ class Tallon():
         if len(allBonuses) > 0:
             candidateBonus = allBonuses[0]
             # If not at the same x coordinate, reduce the difference
-            if candidateBonus.x > myPosition.x and not utils.containedIn(myPosition.offset(+1, 0), allBlocks):
+            if candidateBonus.x > myPosition.x and not utils.containedIn(self.offset(myPosition, +1, 0), allBlocks):
                 return Directions.EAST
-            if candidateBonus.x < myPosition.x and not utils.containedIn(myPosition.offset(-1, 0), allBlocks):
+            if candidateBonus.x < myPosition.x and not utils.containedIn(self.offset(myPosition, -1, 0), allBlocks):
                 return Directions.WEST
             # If not at the same y coordinate, reduce the difference
-            if candidateBonus.y < myPosition.y and not utils.containedIn(myPosition.offset(0, -1), allBlocks):
+            if candidateBonus.y < myPosition.y and not utils.containedIn(self.offset(myPosition, 0, -1), allBlocks):
                 return Directions.NORTH
-            if candidateBonus.y > myPosition.y and not utils.containedIn(myPosition.offset(0, +1), allBlocks):
+            if candidateBonus.y > myPosition.y and not utils.containedIn(self.offset(myPosition, 0, +1), allBlocks):
                 return Directions.SOUTH
 
         # if there are no more bonuses, Tallon doesn't move

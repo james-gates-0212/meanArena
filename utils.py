@@ -29,18 +29,8 @@ class Pose():
     x = 0
     y = 0
 
-    def __init__(self, x = 0, y = 0):
-        self.x = x
-        self.y = y
-
-    def offset(self, offsetX = 0, offsetY = 0):
-        return Pose(self.x + offsetX, self.y + offsetY)
-
     def print(self):
-        print(self.__str__())
-
-    def __str__(self):
-        return '[{}, {}]'.format(self.x, self.y)
+        print('[', self.x, ',', self.y, ']')
 
 # Check if two game elements are in the same location
 def sameLocation(pose1, pose2):
