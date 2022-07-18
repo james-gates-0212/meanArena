@@ -1,0 +1,12 @@
+{
+  "python.formatting.provider": "autopep8",
+  "prettier.resolveGlobalModules": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.python"
+  },
+  "python.linting.pylintArgs": ["--load-plugins=pylint_django"],
+  "editor.tabSize": 2,
+  "editor.formatOnPaste": true,
+  "editor.formatOnSave": true
+}

@@ -16,6 +16,7 @@ from utils import Pose
 from utils import Directions
 from utils import State
 
+
 class World():
 
     def __init__(self):
@@ -31,7 +32,8 @@ class World():
         # Add the initial set of Meanies
         self.mLoc = []
         for i in range(config.numberOfMeanies):
-            newLoc = utils.pickUniquePose(self.maxX, self.maxY, self.locationList)
+            newLoc = utils.pickUniquePose(
+                self.maxX, self.maxY, self.locationList)
             self.mLoc.append(newLoc)
             self.locationList.append(newLoc)
 
@@ -43,14 +45,16 @@ class World():
         # Add Bonuses
         self.bLoc = []
         for i in range(config.numberOfBonuses):
-            newLoc = utils.pickUniquePose(self.maxX, self.maxY, self.locationList)
+            newLoc = utils.pickUniquePose(
+                self.maxX, self.maxY, self.locationList)
             self.bLoc.append(newLoc)
             self.locationList.append(newLoc)
 
         # Pits
         self.pLoc = []
         for i in range(config.numberOfPits):
-            newLoc = utils.pickUniquePose(self.maxX, self.maxY, self.locationList)
+            newLoc = utils.pickUniquePose(
+                self.maxX, self.maxY, self.locationList)
             self.pLoc.append(newLoc)
             self.locationList.append(newLoc)
 
@@ -206,7 +210,7 @@ class World():
     # Move at 90 degrees to the original direction.
     def sideMove(self, direction):
         # Do we head left or right of the intended direction?
-        dice =  random.random()
+        dice = random.random()
         if dice > 0.5:
             left = True
         else:
@@ -262,9 +266,11 @@ class World():
         else:
             dice = random.random()
             if dice > 0.5:
-                self.mLoc[i].y = self.reduceDifference(self.mLoc[i].y, target.y)
+                self.mLoc[i].y = self.reduceDifference(
+                    self.mLoc[i].y, target.y)
             else:
-                self.mLoc[i].x = self.reduceDifference(self.mLoc[i].x, target.x)
+                self.mLoc[i].x = self.reduceDifference(
+                    self.mLoc[i].x, target.x)
 
     # Move value towards target.
     def reduceDifference(self, value, target):
@@ -281,27 +287,30 @@ class World():
         dice = random.random()
         if dice > 0.5:
             xChange = random.randint(0, 2) - 1
-            self.mLoc[i].x = utils.checkBounds(self.maxX, self.mLoc[i].x - xChange)
+            self.mLoc[i].x = utils.checkBounds(
+                self.maxX, self.mLoc[i].x - xChange)
         else:
             yChange = random.randint(0, 2) - 1
-            self.mLoc[i].y = utils.checkBounds(self.maxY, self.mLoc[i].y - yChange)
+            self.mLoc[i].y = utils.checkBounds(
+                self.maxY, self.mLoc[i].y - yChange)
 
     # Add a meanie at intervals
     def addMeanie(self):
         if (self.clock % config.meanieInterval) == 0:
-            newLoc = utils.pickUniquePose(self.maxX, self.maxY, self.locationList)
+            newLoc = utils.pickUniquePose(
+                self.maxX, self.maxY, self.locationList)
             self.mLoc.append(newLoc)
 
             self.locationList.append(newLoc)
 
     # Increment the clock every time the function is called
     def updateClock(self):
-        self.clock +=1
+        self.clock += 1
 
     # Increment the score at intervals
     def updateScore(self):
         if (self.clock % config.scoreInterval) == 0:
-            self.score +=1
+            self.score += 1
 
     # Update the score with bonus
     def updateScoreWithBonus(self):

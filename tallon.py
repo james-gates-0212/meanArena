@@ -15,15 +15,16 @@ from utils import Directions, Pose
 
 config.nonDeterministic = None
 
+
 class Tallon():
 
-    safeDistance   = 0
-    allBonuses          = []
-    currentPose         = None
-    targetPose          = None
-    allMeanies          = []
-    allMeaniesToAvoid   = []
-    allPits             = []
+    safeDistance = 0
+    allBonuses = []
+    currentPose = None
+    targetPose = None
+    allMeanies = []
+    allMeaniesToAvoid = []
+    allPits = []
 
     def __init__(self, arena):
 
@@ -32,7 +33,8 @@ class Tallon():
         self.gameWorld = arena
 
         # What moves are possible.
-        self.moves = [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]
+        self.moves = [Directions.NORTH, Directions.SOUTH,
+                      Directions.EAST, Directions.WEST]
 
         # Make the safe distance between Tallon and Meanies
         if config.partialVisibility:
@@ -44,7 +46,7 @@ class Tallon():
         #     self.safeDistance = 3
 
     # Get the poses were not contained the ban poses
-    def filterPoses(self, poses, banPoses = []):
+    def filterPoses(self, poses, banPoses=[]):
         filtered = []
         for pose in poses:
             if not utils.containedIn(pose, banPoses):
@@ -59,7 +61,7 @@ class Tallon():
         return middlePose
 
     # Choose the best pose from the given poses by avoiding the Bans and earning the closest Bonus
-    def chooseTheBestPose(self, poses, bans = []):
+    def chooseTheBestPose(self, poses, bans=[]):
         if len(poses) == 0 or len(bans) == 0:
             return None
 
@@ -101,44 +103,50 @@ class Tallon():
         return candidatePoses[distances.index(min(distances))]
 
     # Generate all poses for moving in the world
-    def availablePoses(self, poses, target = None):
+    def availablePoses(self, poses, target=None):
         candidatePoses = []
         # Cross offsets
-        offsets =  [
-            { 'x': 0, 'y': +1 }, # North
-            { 'x': 0, 'y': -1 }, # South
-            { 'x': +1, 'y': 0 }, # Eest
-            { 'x': -1, 'y': 0 }, # West
+        offsets = [
+            {'x': 0, 'y': +1},  # North
+            {'x': 0, 'y': -1},  # South
+            {'x': +1, 'y': 0},  # Eest
+            {'x': -1, 'y': 0},  # West
         ]
         for pose in poses:
             for offset in offsets:
-                candidatePose = Pose();
+                candidatePose = Pose()
                 candidatePose.x = pose.x + offset['x']
                 candidatePose.y = pose.y + offset['y']
                 if (
                     target != None and
-                    ( pose.x == target.x or pose.y == target.y )
+                    (pose.x == target.x or pose.y == target.y)
                 ):
-                    candidatePose.x = self.gameWorld.reduceDifference(pose.x, target.x)
-                    candidatePose.y = self.gameWorld.reduceDifference(pose.y, target.y)
-                candidatePose.x = utils.checkBounds(self.gameWorld.maxX, candidatePose.x)
-                candidatePose.y = utils.checkBounds(self.gameWorld.maxY, candidatePose.y)
+                    candidatePose.x = self.gameWorld.reduceDifference(
+                        pose.x, target.x)
+                    candidatePose.y = self.gameWorld.reduceDifference(
+                        pose.y, target.y)
+                candidatePose.x = utils.checkBounds(
+                    self.gameWorld.maxX, candidatePose.x)
+                candidatePose.y = utils.checkBounds(
+                    self.gameWorld.maxY, candidatePose.y)
                 candidatePoses.append(candidatePose)
         return candidatePoses
 
     # Get the dangerous poses from the Pits and Meanies
-    def banPoses(self, pose = None, noCandidatePoses = False):
+    def banPoses(self, pose=None, noCandidatePoses=False):
         allMeaniesCandidatePoses = []
         if not noCandidatePoses:
-            allMeaniesCandidatePoses = self.availablePoses(self.allMeanies, pose)
+            allMeaniesCandidatePoses = self.availablePoses(
+                self.allMeanies, pose)
         return self.allPits + self.allMeanies + allMeaniesCandidatePoses
 
     # Get the candidate poses from the given pose
-    def candidatePoses(self, pose = None):
+    def candidatePoses(self, pose=None):
         if pose == None:
             return []
         # Filter the available poses to avoid the Pits, Meanies and Meanies's candidate poses
-        candidatePoses = self.filterPoses(self.availablePoses([pose]), self.banPoses(pose))
+        candidatePoses = self.filterPoses(
+            self.availablePoses([pose]), self.banPoses(pose))
 
         return candidatePoses
 
@@ -152,18 +160,20 @@ class Tallon():
 
     # Get the target pose for Tallon to avoid Meanies and earn the closest bonus
     def targetPoseToAvoidMeanies(self):
-        self.allMeaniesToAvoid = self.filterBySafeDistance(self.allMeanies, self.currentPose)
-        self.targetPose = self.chooseTheBestPose(self.candidatePoses(self.currentPose), self.allMeaniesToAvoid)
+        self.allMeaniesToAvoid = self.filterBySafeDistance(
+            self.allMeanies, self.currentPose)
+        self.targetPose = self.chooseTheBestPose(
+            self.candidatePoses(self.currentPose), self.allMeaniesToAvoid)
 
     # Get the pose was moved by offsetX and offsetY from the given pose
-    def offset(self, pose, offsetX = 0, offsetY = 0):
+    def offset(self, pose, offsetX=0, offsetY=0):
         newPose = Pose()
         newPose.x = utils.checkBounds(self.gameWorld.maxX, pose.x + offsetX)
         newPose.y = utils.checkBounds(self.gameWorld.maxY, pose.y + offsetY)
         return newPose
 
     # Get the direction between current pose and target pose without ban poses
-    def direction(self, bans = []):
+    def direction(self, bans=[]):
         # If not at the same x coordinate, reduce the difference
         if self.targetPose.x > self.currentPose.x and not utils.containedIn(self.offset(self.currentPose, +1, 0), bans):
             return Directions.EAST

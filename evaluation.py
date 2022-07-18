@@ -18,7 +18,7 @@
 # pip install openpyxl
 
 from world import World
-from tallon  import Tallon
+from tallon import Tallon
 from arena import Arena
 import pandas as pd
 import random
@@ -53,7 +53,8 @@ for size in [10, 15, 20]:
                 totalScore = "="
                 first = True
                 print('--------------------------------------------------------------')
-                print('Size = {}, Pits = {}, Bonuses = {}, Spawn = {}, Times = {}'.format(size, pits, bonuses, spawnSpeed, times))
+                print('Size = {}, Pits = {}, Bonuses = {}, Spawn = {}, Times = {}'.format(
+                    size, pits, bonuses, spawnSpeed, times))
                 for i in range(times):
                     print('--------------------------------------------------')
                     print('>>> {} evaluation <<<'.format(i + 1))
